@@ -322,8 +322,8 @@ const updateAvatar = asynHandler(async(req, res) => {
 const getUserChannelProfile = asynHandler(async(req, res) => {
     const {username} = req.params
 
-    if(!username?.trim()){
-        throw new ApiError(400, "Username is required")
+    if (!username?.trim()) {
+        throw new ApiError(400, "username is missing")
     }
 
     const channel = await User.aggregate([
@@ -346,20 +346,19 @@ const getUserChannelProfile = asynHandler(async(req, res) => {
                 localField: "_id",
                 foreignField: "subscriber",
                 as: "subscribedTo"
-
             }
         },
         {
             $addFields: {
                 subscribersCount: {
-                    $size: "$subscribers",
+                    $size: "$subscribers"
                 },
-                channelsSubscribedTOCount: {
-                    $size: "$subscribedTo",
+                channelsSubscribedToCount: {
+                    $size: "$subscribedTo"
                 },
                 isSubscribed: {
                     $cond: {
-                        if: {$in: [req.user?._id, "$subcribers.subscriber"]},
+                        if: {$in: [req.user?._id, "$subscribers.subscriber"]},
                         then: true,
                         else: false
                     }
@@ -371,17 +370,18 @@ const getUserChannelProfile = asynHandler(async(req, res) => {
                 fullName: 1,
                 username: 1,
                 subscribersCount: 1,
-                channelsSubscribedTOCount: 1,
+                channelsSubscribedToCount: 1,
                 isSubscribed: 1,
                 avatar: 1,
                 coverImage: 1,
                 email: 1
+
             }
         }
     ])
 
-    if(!channel?.length) {
-        throw new ApiError(404, "channel does not exist")
+    if (!channel?.length) {
+        throw new ApiError(404, "channel does not exists")
     }
 
     return res
